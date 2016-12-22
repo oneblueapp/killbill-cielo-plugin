@@ -52,7 +52,6 @@ public class CreditCardConverter extends PaymentInfoConverter<Card> {
         final CreditCard creditCard = super.convertPaymentInfoToCreateTokenRequest(paymentInfo);
 
         if (paymentInfo.getNumber() != null) {
-            //creditCard.setCustomerName() ?????
             creditCard.setBrand(paymentInfo.getBrand());
             creditCard.setCardNumber(paymentInfo.getNumber());
             creditCard.setHolder(paymentInfo.getHolderName());

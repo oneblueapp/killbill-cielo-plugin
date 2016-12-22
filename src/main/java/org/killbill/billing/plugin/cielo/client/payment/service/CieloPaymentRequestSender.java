@@ -29,6 +29,7 @@ import java.util.concurrent.ExecutionException;
 
 import cieloecommerce.sdk.ecommerce.CieloEcommerce;
 import cieloecommerce.sdk.ecommerce.CreditCard;
+import cieloecommerce.sdk.ecommerce.CreditCardToken;
 import cieloecommerce.sdk.ecommerce.Sale;
 import cieloecommerce.sdk.ecommerce.request.CieloError;
 import cieloecommerce.sdk.ecommerce.request.CieloRequestException;
@@ -105,8 +106,7 @@ public class CieloPaymentRequestSender implements Closeable {
         return callCielo(new IngenicoCall<CieloEcommerce, CreditCard>() {
             @Override
             public CreditCard apply(final CieloEcommerce client) throws CieloRequestException, IOException {
-                //return client.tokens().create(createTokenRequest);
-                return null;
+                return client.tokenizeCard(createTokenRequest);
             }
         });
     }

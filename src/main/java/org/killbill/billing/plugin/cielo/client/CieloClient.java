@@ -8,6 +8,7 @@ import java.util.Map;
 
 import cieloecommerce.sdk.ecommerce.CreditCard;
 import cieloecommerce.sdk.ecommerce.Payment;
+import cieloecommerce.sdk.ecommerce.Payment.Currency;
 import cieloecommerce.sdk.ecommerce.Sale;
 import org.killbill.billing.payment.api.TransactionType;
 import org.killbill.billing.payment.plugin.api.PaymentPluginApiException;
@@ -24,11 +25,11 @@ import org.killbill.billing.plugin.cielo.client.payment.service.BaseCieloPayment
 import org.killbill.billing.plugin.cielo.client.payment.service.CieloCallErrorStatus;
 import org.killbill.billing.plugin.cielo.client.payment.service.CieloCallResult;
 import org.killbill.billing.plugin.cielo.client.payment.service.CieloPaymentRequestSender;
+import org.killbill.billing.plugin.util.KillBillMoney;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 
-import static jdk.nashorn.internal.runtime.JSType.toInteger;
 import static org.killbill.billing.plugin.cielo.client.model.PurchaseResult.EXCEPTION_CLASS;
 import static org.killbill.billing.plugin.cielo.client.model.PurchaseResult.EXCEPTION_MESSAGE;
 import static org.killbill.billing.plugin.cielo.client.model.PurchaseResult.INGENICO_CALL_ERROR_STATUS;
@@ -130,6 +131,10 @@ public class CieloClient extends BaseCieloPaymentServiceProviderPort implements 
         return null;
     }
 
+    private Integer toInteger(final BigDecimal amount) {
+        return (int) (KillBillMoney.toMinorUnits(Currency.BRL.toString(), amount));
+    }
+
     private PaymentModificationResponse handleTechnicalFailureAtRefund(final String paymentId, final PaymentData paymentData, final CieloCallResult<Sale> ingenicoCall) {
         logTransactionError("refund", paymentId, null, ingenicoCall);
         return new PaymentModificationResponse(paymentId, ingenicoCall, getModificationAdditionalErrorData(ingenicoCall));
@@ -146,17 +151,17 @@ public class CieloClient extends BaseCieloPaymentServiceProviderPort implements 
     }
 
     public String tokenizeCreditCard(PaymentInfo paymentInfo, UserData userData) throws PaymentPluginApiException {
-//        CreditCard body = cieloRequestFactory.createTokenRequest(paymentInfo, userData);
-//        final CieloCallResult<CreditCard> cieloCallResult = cieloPaymentRequestSender.createToken(body);
-//        if (!cieloCallResult.receivedWellFormedResponse()) {
-//            if (cieloCallResult.getError().isPresent() && cieloCallResult.getError().get().size() > 0) {
-//                throw new PaymentPluginApiException(cieloCallResult.getError().get().get(0).getCode(), cieloCallResult.getError().get().get(0).getMessage());
-//            }
-//            return null;
-//        }
-//
-//        return cieloCallResult.getResult().get().getToken();
-        return null;
+        CreditCard body = cieloRequestFactory.createTokenRequest(paymentInfo, userData);
+        body.setCustomerName(userData.getFirstName() + " " + userData.getLastName());
+        final CieloCallResult<CreditCard> cieloCallResult = cieloPaymentRequestSender.createToken(body);
+        if (!cieloCallResult.receivedWellFormedResponse()) {
+            if (cieloCallResult.getError().isPresent()) {
+                throw new PaymentPluginApiException(cieloCallResult.getError().get().getCode().toString(), cieloCallResult.getError().get().getMessage());
+            }
+            return null;
+        }
+
+        return cieloCallResult.getResult().get().getCardToken();
     }
 
     public PaymentModificationResponse getPaymentInfo(final String paymentId, TransactionType transactionType) {

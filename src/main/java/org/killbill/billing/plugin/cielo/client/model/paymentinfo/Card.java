@@ -86,7 +86,7 @@ public class Card extends PaymentInfo {
     }
 
     public String getExpiryDate() {
-        return getExpiryMonth() + getExpiryYear();
+        return getExpiryMonth() + "/" + getExpiryYear();
     }
 
     public void setIssuerCountry(final String issuerCountry) {

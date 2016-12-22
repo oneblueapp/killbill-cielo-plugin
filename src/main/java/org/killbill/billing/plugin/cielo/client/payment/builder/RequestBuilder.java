@@ -22,6 +22,8 @@ import javax.annotation.Nullable;
 
 import org.killbill.billing.plugin.util.KillBillMoney;
 
+import cieloecommerce.sdk.ecommerce.Payment.Currency;
+
 public abstract class RequestBuilder<R> {
 
     protected R sale;
@@ -34,9 +36,13 @@ public abstract class RequestBuilder<R> {
         return sale;
     }
 
-    protected Long toMinorUnits(@Nullable final BigDecimal amountBD, @Nullable final String currencyIsoCode) {
-        if (amountBD == null || currencyIsoCode == null) {
+    protected Long toMinorUnits(@Nullable final BigDecimal amountBD, @Nullable String currencyIsoCode) {
+        if (amountBD == null) {
             return null;
+        }
+
+        if (currencyIsoCode == null) {
+            currencyIsoCode = Currency.BRL.toString();
         }
         return KillBillMoney.toMinorUnits(currencyIsoCode, amountBD);
     }

@@ -67,7 +67,7 @@ public class PaymentRequestBuilder extends RequestBuilder<Sale> {
             return;
         }
 
-        payment.setAmount(toInteger(paymentData.getAmount()));
+        payment.setAmount(toMinorUnits(paymentData.getAmount(), paymentData.getCurrency().toString()).intValue());
     }
 
     private void setShopperData() {

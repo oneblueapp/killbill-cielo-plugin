@@ -1,0 +1,148 @@
+/*
+ * Copyright 2014-2016 Groupon, Inc
+ * Copyright 2014-2016 The Billing Project, LLC
+ *
+ * The Billing Project licenses this file to you under the Apache License, version 2.0
+ * (the "License"); you may not use this file except in compliance with the
+ * License.  You may obtain a copy of the License at:
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
+
+package org.killbill.billing.plugin.cielo.client.model;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
+import javax.annotation.Nullable;
+
+import org.killbill.billing.plugin.cielo.client.payment.service.CieloCallErrorStatus;
+import org.killbill.billing.plugin.cielo.client.payment.service.CieloCallResult;
+
+import com.google.common.base.Optional;
+
+public class PaymentModificationResponse<T> {
+
+    private final CieloCallErrorStatus cieloCallErrorStatus;
+    private final Map<Object, Object> additionalData;
+    private final String paymentId;
+    private final String status;
+    private final Optional<PaymentServiceProviderResult> result;
+
+    public PaymentModificationResponse(final String paymentId, final CieloCallResult<T> cieloCallResult, final Map<Object, Object> additionalData) {
+        this(Optional.<PaymentServiceProviderResult>absent(), paymentId, null, cieloCallResult.getResponseStatus().orNull(), additionalData);
+    }
+
+    public PaymentModificationResponse(final PaymentServiceProviderResult result, final String status, final String paymentId) {
+        this(Optional.of(result), paymentId, status, null, new HashMap<Object, Object>());
+    }
+
+    private PaymentModificationResponse(Optional<PaymentServiceProviderResult> result,
+                                        final String paymentId,
+                                        final String status,
+                                        @Nullable final CieloCallErrorStatus cieloCallErrorStatus,
+                                        final Map<Object, Object> additionalData) {
+        this.result = result;
+        this.paymentId = paymentId;
+        this.status = status;
+        this.cieloCallErrorStatus = cieloCallErrorStatus;
+        this.additionalData = additionalData;
+    }
+
+    /**
+     * True if we received a well formed soap status from adyen.
+     */
+    public boolean isTechnicallySuccessful() {
+        return !getCieloCallErrorStatus().isPresent();
+    }
+
+    public Map<Object, Object> getAdditionalData() {
+        return additionalData;
+    }
+
+    public String getPaymentId() {
+        return paymentId;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public Optional<CieloCallErrorStatus> getCieloCallErrorStatus() {
+        return Optional.fromNullable(cieloCallErrorStatus);
+    }
+
+    public Optional<PaymentServiceProviderResult> getResult() {
+        return result;
+    }
+
+    public PaymentServiceProviderResult getResultOrNull() {
+        return result.isPresent() ? result.get() : null;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("PaymentModificationResponse{");
+        sb.append("cieloCallErrorStatus=").append(cieloCallErrorStatus);
+        sb.append(", paymentId='").append(paymentId).append('\'');
+        sb.append(", status='").append(status).append('\'');
+        sb.append(", additionalData={");
+        // Make sure to escape values, as they may contain spaces
+        final Iterator<Object> iterator = additionalData.keySet().iterator();
+        if (iterator.hasNext()) {
+            final Object key = iterator.next();
+            sb.append(key).append("='").append(additionalData.get(key)).append("'");
+        }
+        while (iterator.hasNext()) {
+            final Object key = iterator.next();
+            sb.append(", ")
+              .append(key)
+              .append("='")
+              .append(additionalData.get(key))
+              .append("'");
+        }
+        sb.append("}}");
+        return sb.toString();
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        final PaymentModificationResponse that = (PaymentModificationResponse) o;
+
+        if (additionalData != null ? !additionalData.equals(that.additionalData) : that.additionalData != null) {
+            return false;
+        }
+        if (paymentId != null ? !paymentId.equals(that.paymentId) : that.paymentId != null) {
+            return false;
+        }
+        //noinspection SimplifiableIfStatement
+        if (status != null ? !status.equals(that.status) : that.status != null) {
+            return false;
+        }
+        return !(cieloCallErrorStatus != null ? !cieloCallErrorStatus.equals(that.cieloCallErrorStatus) : that.cieloCallErrorStatus != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = additionalData != null ? additionalData.hashCode() : 0;
+        result = 31 * result + (paymentId != null ? paymentId.hashCode() : 0);
+        result = 31 * result + (status != null ? status.hashCode() : 0);
+        result = 31 * result + (cieloCallErrorStatus != null ? cieloCallErrorStatus.hashCode() : 0);
+        return result;
+    }
+}
